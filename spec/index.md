@@ -1,5 +1,10 @@
 # Power Management
 
+## Version
+
+This is version 0.9.0 of the specification.
+
+
 ## Terminology
 
 | Term                | Definition |
