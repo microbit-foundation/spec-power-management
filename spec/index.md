@@ -9,12 +9,17 @@ This is version 1.0.0 of the specification.
 
 | Term                | Definition |
 |---------------------|------------|
+| MCU                 | Microcontroller |
 | Interface MCU       | The microcontroller providing USB (DAPLink) functionality |
 | Target MCU          | The microcontroller where the user code runs |
 | Sleep               | A sleep mode for the individual MCUs (Interface or Target) where they can wake up and continue operation |
 | Power Down          | The lowest power state mode for individual MCUs (Interface or Target) |
+| DAPLink             | [Interface firmware](https://github.com/ARMmbed/DAPLink) providing USB and programming capabilities |
 | PC Connected        | When DAPLink on the Interface MCU is USB enumerated and/or has USB activity with a PC |
 | On-board components | Motion sensors, speaker, microphone |
+| I2C                 | [(Inter-Integrated Circuit](https://en.wikipedia.org/wiki/I%C2%B2C) bus |
+| VBUS_ABSENT         | Signal connected to the Interface MCU indicate USB voltage presence (previously named WAKE_ON_EDGE)|
+| COMBINED_SENSOR_INT | Interrupt signal shared between all the internal I2C devices in the micro:bit board |
 
 
 ## Introduction
@@ -60,7 +65,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
             - Edge connector pin
             - A or B buttons
             - The Interface (KL27) can wake up the Target (nRF52) via COMBINED_SENSOR_INT
-            - USB cable insertion (WAKE_ON_EDGE signal)
+            - USB cable insertion (VBUS_ABSENT signal)
         - Pressing the reset button
             - The Interface (KL27) must halt the Target (nRF52) while the button is pressed down
             - The Interface (KL27) must reset the Target (nRF52) when the reset button is released
@@ -78,7 +83,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
         - Long press of the reset button
         - User code calling a CODAL `uBit` method
     - Woken up via:
-        - USB cable insertion (WAKE_ON_EDGE signal)
+        - USB cable insertion (VBUS_ABSENT signal)
         - Pressing the reset button
     - The Power (red) LED must be OFF
     - The USB (orange) LED must be OFF
@@ -97,7 +102,7 @@ There is a large selection of sleep modes available in the KL27 microcontroller,
     - Lowest power mode available in the KL27
     - Wakes up in reset mode
     - Woken up via LLWU pins:
-        - WAKE_ON_EDGE triggered by inserting the USB cable
+        - VBUS_ABSENT triggered by inserting the USB cable
         - BTN_NOT_PRESSED triggered by pressing the reset button
 2) **Sleep**: VLPS0, Very Low Power Stop 0
     - The deepest sleep mode that can be woken up via I2C
@@ -137,12 +142,12 @@ Waking up via Target (nRF52):
     - Errata e8777: Address match wake-up from low-power mode cannot receive data
         - https://www.nxp.com/docs/en/errata/KINETIS_L_1N71K.pdf
         - So the data in the I2C transmission will be lost if it wakes up the Interface (KL27)
-    - The Target (nRF52) could use this workaround from e8777 errata: Send only the matching slave address followed by a repeated start and then resend the matching slave address including any subsequent data
+    - The Target (nRF52) could use this workaround from e8777 errata: Send only the matching secondary address followed by a repeated start and then resend the matching secondary address including any subsequent data
         - At the time of writing the nrfx drivers used in CODAL makes this very difficult, so instead the wake up workaround is to start all I2C transactions with a "nop" I2C command that does nothing, so it doesn't matter if its lost and if it is received the KL27 will ignore it
 
-Waking up from WAKE_ON_EDGE signal:
-- A USB cable insertion will set the WAKE_ON_EDGE signal active (high)
-- When the WAKE_ON_EDGE transitions from inactive to active the Interface (KL27) must wake up from any sleep mode
+Waking up from VBUS_ABSENT signal:
+- A USB cable insertion will set the VBUS_ABSENT signal active (low)
+- When the VBUS_ABSENT transitions from inactive to active the Interface (KL27) must wake up from any sleep mode
 
 Waking up from the reset button:
 - Pressing the reset button sets the BTN_RST signal active (low)
