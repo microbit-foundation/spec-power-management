@@ -1,87 +1,108 @@
-# Power Management
+# Power Management Specification
 
 ## Version
 
-This is version 0.9.0 of the specification.
+This is version 1.0.0 of the specification.
 
 
 ## Terminology
 
 | Term                | Definition |
 |---------------------|------------|
-| Sleep               | A sleep mode for the KL27 or nRF52 where they can wake up and continue operation |
-| Power Down          | Lowest power state mode for the KL27 or nRF52 |
-| PC Connected        | When DAPLink on the KL27 is USB enumerated and/or has USB activity with a PC |
+| MCU                 | Microcontroller |
+| Interface MCU       | The microcontroller providing USB (DAPLink) functionality |
+| Target MCU          | The microcontroller where the user code runs |
+| Sleep               | A sleep mode for the individual MCUs (Interface or Target) where they can wake up and continue operation |
+| Power Down          | The lowest power state mode for individual MCUs (Interface or Target) |
+| DAPLink             | [Interface firmware](https://github.com/ARMmbed/DAPLink) providing USB and programming capabilities |
+| PC Connected        | When DAPLink on the Interface MCU is USB enumerated and/or has USB activity with a PC |
 | On-board components | Motion sensors, speaker, microphone |
+| I2C                 | [(Inter-Integrated Circuit](https://en.wikipedia.org/wiki/I%C2%B2C) bus |
+| VBUS_ABSENT         | Signal connected to the Interface MCU indicate USB voltage presence (previously named WAKE_ON_EDGE)|
+| COMBINED_SENSOR_INT | Interrupt signal shared between all the internal I2C devices in the micro:bit board |
 
 
-## micro:bit power modes
+## Introduction
+
+The micro:bit contains two microcontrollers, the Interface MCU (KL27) which provides the USB functionality, and the Target MCU (nRF52) where the user code runs.
+More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/).
+
+In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
+The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
+
+
+## micro:bit Power Modes
 
 We want to define 4 user-facing power modes for the micro:bit board. These board-level modes will be achieved via a combination of different subsystem power modes.
 
 - **On Mode**: Normal running mode.
     - As far as the user is concerned, everything is running
-    - However the software in the nRF52 and KL27 can decide to go into Sleep if they are idle
-        - If the KL27 is not PC Connected and is idle it can go into Sleep and automatically wake up when it receives I2C transactions from the nRF52
-        - If the nRF52 is idle it can go automatically into Sleep, but it needs to wake up on the ticker to run background operations
-        - When these systems wake up they must resume where they left off
-    - All events and background tasks need to be running during this mode
-    - The Power (red) LED will be ON
-    - If the board is PC connected the USB (orange) LED will be ON
-    - If the board is not PC connected the USB (orange) LED will be OFF
+    - The software in the Target (nRF52) and Interface (KL27) can decide to go into Sleep if they are idle
+        - If the Interface (KL27) is not PC Connected and is idle it must go into Sleep
+            - When the Interface (KL27) is in Sleep it must automatically wake up when it receives I2C transactions from the Target (nRF52)
+        - If the Target (nRF52) is idle it can automatically go into Sleep
+            - When the Target (nRF52) is in Sleep it must to wake up on the ticker to run background operations
+            - When the Target (nRF52) is in Sleep it must not drop any input data (buses, radio, gpio, etc)
+        - When the Interface (KL27) or the Target (nRF52) wake up they must resume where they left off
+    - All events and background tasks must to be running during this mode
+    - The Power (red) LED must be ON
+    - If the board is PC connected the USB (orange) LED must be ON
+    - If the board is not PC connected the USB (orange) LED must be OFF
 - **Deep Sleep Mode**: A mode triggered by the user code to go into a low-power state
-    - The KL27 doesn't do anything differently
-         - As defined in the "On Mode", the KL27 will manage its own Sleep if it's idle
-    - The nRF52 turns off the on-board components
-    - The nRF52 goes into Sleep mode
-    - On wake the nRF52 will restore the on-board components to run again and the software will resume where it left off
-    - During the time the board is in Deep Sleep, it will not react to anything until it wakes up. Any data received via radio or other buses will be ignored and dropped.
+    - The Interface (KL27) does not do anything different to the On Mode
+    - The Target (nRF52) must turn off the on-board components
+    - The Target (nRF52) must go into Sleep
+    - When the Target (nRF52) wakes up it must restore the on-board components to run again
+    - When the Target (nRF52) wakes up its software must resume where it left off
+    - During the time the board is in Deep Sleep mode, it will not react to anything until it wakes up
+        - Any data received via radio or other buses will be ignored and dropped
     - Entered via:
-        - User code calling a CODAL uBit method
+        - User code calling a CODAL `uBit` method
     - Woken up via:
-        - Timer on nRF52
+        - Timer on the Target (nRF52)
             - The user can configure the elapsed time to wake-up
-        - Any nRF52 pin
+        - Any pin in Target (nRF52)
             - Edge connector pin
-            - COMBINED_SENSOR_INT by the KL27
-            - A and B buttons
-        - USB cable insertion (WAKE_ON_EDGE)
-            - The KL27 will wake up the nRF52 via COMBINED_SENSOR_INT
+            - A or B buttons
+            - The Interface (KL27) can wake up the Target (nRF52) via COMBINED_SENSOR_INT
+            - USB cable insertion (VBUS_ABSENT signal)
         - Pressing the reset button
-            - The KL27 will halt the nRF52 while the button is pressed down, and reset it on button release
-    - If the board is PC Connected the USB (orange) and Power (red) LEDs will be ON
-    - If the board is not PC Connected the USB (orange) and Power (red) LEDs will be OFF
+            - The Interface (KL27) must halt the Target (nRF52) while the button is pressed down
+            - The Interface (KL27) must reset the Target (nRF52) when the reset button is released
+    - If the board is PC Connected the USB (orange) and Power (red) LEDs must be ON
+    - If the board is not PC Connected the USB (orange) and Power (red) LEDs must be OFF
 - **Off Mode**: Lowest possible power state for all components on the board
-    - The board can be considered "off", although it consumes a bit of power
+    - The board can be considered "off", although it will still consume power
     - This mode can only be reached if the micro:bit is powered via battery or USB bank (not USB Connected)
-    - All on-board components turned off
-    - Power Down mode for the KL27 and nRF52 microcontrollers
-    - Device will not react to anything except the wake up sources
-    - Both microcontrollers will reset on wake
+    - The Target (nRF52) must turn off the on-board components
+    - The Target (nRF52) must go into Power Down
+    - The Interface (KL27) must go into Power Down
+    - The board will not react to anything except the wake up sources
+    - Both microcontrollers must reset on wake
     - Entered via:
         - Long press of the reset button
-        - User code calling CODAL uBit method
+        - User code calling a CODAL `uBit` method
     - Woken up via:
-        - USB cable insertion (WAKE_ON_EDGE)
+        - USB cable insertion (VBUS_ABSENT signal)
         - Pressing the reset button
-    - The Power (red) LED will be OFF
-    - The USB (orange) LED will be OFF
-- **Stand-by Mode**: User long presses the reset button, while the micro:bit is PC Connected, to stop their nRF52 programme
+    - The Power (red) LED must be OFF
+    - The USB (orange) LED must be OFF
+- **Stand-by Mode**: User long presses the reset button, while the micro:bit is PC Connected, to stop their Target (nRF52) programme
     - This is the same as the Off Mode, but this mode is activated when the micro:bit is PC Connected
-    - The KL27 does not go to sleep in this case, the rest behaves the same
-    - The Power (red) LED will be blinking
-    - The USB (orange) LED will be ON
+    - The Interface (KL27) must not go into any sleep in this case, the rest behaves the same
+    - The Power (red) LED must be blinking
+    - The USB (orange) LED must be ON
 
 
-## KL27 Power Modes
+## Interface (KL27) Power Modes
 
-There is a large selection of sleep modes available in the KL27, two have been selected for the micro:bit requirements. 
+There is a large selection of sleep modes available in the KL27 microcontroller, two have been selected for the micro:bit requirements.
 
 1) **Power Down**: VLLS0, Very Low-Leakage Stop 0
     - Lowest power mode available in the KL27
     - Wakes up in reset mode
     - Woken up via LLWU pins:
-        - WAKE_ON_EDGE triggered by inserting the USB cable
+        - VBUS_ABSENT triggered by inserting the USB cable
         - BTN_NOT_PRESSED triggered by pressing the reset button
 2) **Sleep**: VLPS0, Very Low Power Stop 0
     - The deepest sleep mode that can be woken up via I2C
@@ -90,54 +111,67 @@ There is a large selection of sleep modes available in the KL27, two have been s
         - I2C transactions
 
 Other notes:
-- The KL27 will only enter either of these two modes if it is **not** PC Connected
-    - As both modes aren't PC connected, the KL27 won't respond to any UART activity
-- The KL27 will automatically go into Sleep mode if it's idle
-    - This power mode is managed exclusively by the KL27
-- The KL27 will go into Power Down mode when requested by the nRF52 via I2C
-    - If the KL27 is PC Connected it will ignore the request to go into Power Down
+- The Interface (KL27) must not enter either of these two modes when it is PC Connected
+    - As both modes are not PC connected, the Interface (KL27) won't respond to any UART activity during Sleep or Power Down
+- The Interface (KL27) must automatically go into Sleep mode when it's idle
+    - This power mode is managed exclusively by the Interface (KL27)
+- The Interface (KL27) must go into Power Down mode when requested by the Target (nRF52) via I2C
+    - If the KL27 is PC Connected it must ignore the request to go into Power Down
 
 ### LED behaviour
 
-- In both modes the USB (orange) LED will be OFF
-    - This is because this LED is only ON when PC connected
-- In both modes the Power (red) LED will be ON or OFF depending on a setting configured by the nRF52 via I2C
-    - When the `Power LED Sleep state` setting is ON, the KL27 leaves the Power (red) LED ON when it goes into Sleep or Power Down mode
-        - In Sleep mode the KL27 is able to keep the LED brightness PWM controlled, so it will be dimmed
-        - In Power Down mode the KL27 can only configure the pin high or low, so the LED will be in full brightness
-    - When the `Power LED Sleep state` setting is OFF, the KL27 turns OFF the Power (red) LED when it goes into Sleep or Power Down mode
-    - On KL27 reset, the default `Power LED Sleep state` setting value will be set to ON
-    - When the reset button is pressed, the KL27 will reset the `Power LED Sleep state` value to the default ON
-    - When the KL27 wakes up the nRF52, the KL27 will reset the `Power LED Sleep state` value to the default ON
-    - When the nRF52 goes into Sleep or Power Down mode it will set the `Power LED Sleep state` setting to OFF
-    - When the nRF52 wakes up from Sleep mode it will set the `Power LED Sleep state` setting to ON
+- In both modes the USB (orange) LED must be OFF
+    - This is because this LED is only ON when the board is PC connected
+- In both modes the Power (red) LED state will depend on a setting configured by the Target (nRF52) via I2C
+    - When the `Power LED Sleep state` setting is ON, the Interface (KL27) must set the Power (red) LED ON when it goes into Sleep or Power Down mode
+        - In Sleep mode the Interface (KL27) is able to keep the LED brightness PWM controlled, so the LED must be dimmed
+        - In Power Down mode the Interface (KL27) can only configure the pin high or low, so the LED will be in full brightness
+    - When the `Power LED Sleep state` setting is OFF, the Interface (KL27) must turn OFF the Power (red) LED when it goes into Sleep or Power Down mode
+    - On Interface (KL27) reset, the default `Power LED Sleep state` setting value must be set to ON
+    - When the reset button is pressed, the Interface (KL27) must reset the `Power LED Sleep state` value to the default ON
+    - When the Interface (KL27) wakes up the Target (nRF52), the Interface (KL27) must reset the `Power LED Sleep state` value to the default ON
+    - When the Target (nRF52) goes into Sleep or Power Down mode it must set the `Power LED Sleep state` setting to OFF
+    - When the Target (nRF52) wakes up from Sleep mode it must set the `Power LED Sleep state` setting to ON
 
-### Waking Up The KL27
+### Waking Up The Interface (KL27)
 
-Waking up from the nRF52:
-- The nRF52 does not know the KL27 current power mode, but it needs the KL27 to be responsive to I2C comms
-- To wake up the KL27 device the nRF52 can send an I2C message
-    - When the KL27 is woken up via I2C, it is unable to process the data from the transaction that woke it (e8777 errata)
+Waking up via Target (nRF52):
+- The Target (nRF52) does not know the Interface (KL27) current power mode, but it needs the Interface (KL27) to always be responsive to I2C comms
+- To wake up the Interface (KL27) the Target (nRF52) can send an I2C message
+    - When the Interface (KL27) is woken up via I2C, it is unable to process the data from the transaction that woke it (e8777 errata)
     - Errata e8777: Address match wake-up from low-power mode cannot receive data
         - https://www.nxp.com/docs/en/errata/KINETIS_L_1N71K.pdf
-        - So the data in the I2C transmission will be lost if it wakes up the KL27  
-    - The nRF52 could use this workaround from e8777 errata: Send only the matching slave address followed by a repeated start and then resend the matching slave address including any subsequent data
-        - At the time of writing the nrfx drivers CODAL uses make this very difficult, so instead the wake up workaround is to start all I2C transactions with a "nop" I2C command that does nothing, so it doesn't matter if its lost and if it is received the KL27 will ignore it
+        - So the data in the I2C transmission will be lost if it wakes up the Interface (KL27)
+    - The Target (nRF52) could use this workaround from e8777 errata: Send only the matching secondary address followed by a repeated start and then resend the matching secondary address including any subsequent data
+        - At the time of writing the nrfx drivers used in CODAL makes this very difficult, so instead the wake up workaround is to start all I2C transactions with a "nop" I2C command that does nothing, so it doesn't matter if its lost and if it is received the KL27 will ignore it
 
-Waking up from WAKE_ON_EDGE:
-- A USB cable insertion will set the WAKE_ON_EDGE signal active (high) and that will wake up the KL27 from either sleep mode
-- The KL27 will also need to wake up the nRF52 via COMBINED_SENSOR_INT, even if the KL27 was not asleep
+Waking up from VBUS_ABSENT signal:
+- A USB cable insertion will set the VBUS_ABSENT signal active (low)
+- When the VBUS_ABSENT transitions from inactive to active the Interface (KL27) must wake up from any sleep mode
 
 Waking up from the reset button:
-- A reset button press will wake up the KL27 from either sleep mode
-- The KL27 needs to halt the nRF52 while the button is pressed down, so the KL27 needs to wake up as soon the button is pressed
-    - If the KL27 was in Power Down mode it will reset on wake up, and start execution from the DAPLink bootloader.
-    - If the DAPLink bootloader sees the reset button is pressed down after a VLLS0 wake up it will not enter into MAINTENANCE mode
-    - DAPLink needs to be able to quickly enter the Interface main loop to detect the reset button is still pressed down and keep the nRF52 halted
-- When the button is released the KL27 will reset the nRF52
+- Pressing the reset button sets the BTN_RST signal active (low)
+- When the BTN_RST signal transitions to active the Interface (KL27) must wake up from any sleep mode
+- The Interface (KL27) must halt the Target (nRF52) while the button is pressed down
+- When the Interface (KL27) wakes up from Power Down it must start from a reset state
+- When the Interface (KL27) wakes up from Power Down the DAPLink bootloader must not enter MAINTENANCE mode
+- When the Interface (KL27) wakes up from Sleep the DAPLink interface must continue operation where it left off
+- When the button is released the Interface (KL27) must reset the Target (nRF52)
+
+Setting up the COMBINED_SENSOR_INT signal:
+- When the Interface (KL27) wakes up from any mode it must set the COMBINED_SENSOR_INT signal active
+    - This signal is used to wake up the Target (nRF52)
+    - This signal is open drain and active low
+        - To set the signal activate the Interface (KL27) must pull down its pin connected to this signal
+        - To set the signal inactive the Interface (KL27) must set the pin to high impedance
+- If the signal was already in active state the Interface (KL27) will pulse the signal
+- The Interface (KL27) must be ready for the Target (nRF52) to query via I2C the wake up source
+    - If the Target (nRF52) is in Power Down it might take a considerable amount of time for CODAL to start-up and service the KL27 interrupt
+    - More information about the I2C protocol can be found in the [I2C Protocol Spec](https://github.com/microbit-foundation/spec-i2c-protocol)
+- When the wake up source has been read by the Target (nRF52), the Interface (KL27) must release the COMBINED_SENSOR_INT to the inactive state
 
 
-## nRF52 Power Modes
+## Target (nRF52) Power Modes
 
 The nRF52833 just has two power modes (section 5.3 of the datasheet): System Off, where everything is off; and System On, where everything is running but individual components can be configured into a low power state.
 
@@ -161,35 +195,35 @@ The nRF52833 just has two power modes (section 5.3 of the datasheet): System Off
             - A and B buttons
  
 Other notes:
-- The nRF52 will enter Sleep when:
+- The Target (nRF52) will enter Sleep when:
     - Software is idle
-        - It still needs to be responsive to events, incoming data and run background tasks
-    - User code calls a uBit method to sleep
-- The nRF52 will enter Power Down when:
-    - The KL27 indicates the user has long-pressed the reset button
-    - User code calls a uBit method to go into the board Off mode
+    - User code calls a CODAL `uBit` method to sleep
+- During Sleep the Target (nRF52) must still be responsive to events, incoming data and run background tasks
+- The Target (nRF52) will enter Power Down when:
+    - The Interface (KL27) indicates the user has long-pressed the reset button
+    - User code calls a CODAL `uBit` method to go into the board Off mode
 
-### Waking Up The nRF52
+### Waking Up The Target (nRF52)
+
+- When the COMBINED_SENSOR_INT signal transitions from inactive to active the Target (nRF52) must wake up from Sleep or Power Down
+- When the Target (nRF52) wakes up it must ensure the on-board components are enabled and running
 
 Wake up from the reset button:
-- While the button is pressed down the KL27 will halt the nRF52
-- When the button is released the KL27 will reset the nRF52
-- This will work the same no matter if the nRF52 is awake, in Sleep, or Power Down modes
+- The reset button is only connected to the Interface (KL27)
+- The Interface (KL27) will set the COMBINED_SENSOR_INT signal active
+- The specific Interface (KL27) behaviour when the reset button is pressed can be found in the [Waking Up The Interface (KL27)](#waking-up-the-interface-kl27) section
 
-Wake up from USB cable insertion, the KL27 will:
-- Set the COMBINED_SENSOR_INT active
-    - If the signal was already in active state the KL27 will pulse the signal
-    - This signal is open drain and active low
-    - The nRF52 has to configure its internal pull up in the pin connected to this signal
-    - The nRF52 interrupt will be configured to wake up when the signal transitions from high to low
-    - To set the signal activate the KL27 needs to pull down its pin connected to this signal
-    - To set the signal inactive the KL27 needs to set the pin as high impedance
-    - If the signal is already active by the time the KL27 needs to wake up the nRF52, it should toggle the signal state (inactive, then active again) to ensure the nRF52 interrupt is triggered
-- Wait for the nRF52 to initiate an I2C read for the "interrupt event"
-    - If the nRF52 is in Power Down it might take a considerable amount of time for the CODAL to start-up and service the KL27 interrupt
-- When the "interrupt event" has been read, COMBINED_SENSOR_INT should be released and the signal be in the inactive state again
+Wake up from USB cable insertion:
+- The USB cable insertion signal is only connected to the Interface (KL27)
+- The Interface (KL27) will set the COMBINED_SENSOR_INT active
+- The specific Interface (KL27) behaviour when the USB cable is inserted can be found in the [Waking Up The Interface (KL27)](#waking-up-the-interface-kl27) section
 
-When the nRF52 wakes up, either in reset or continuing where it left off, CODAL might have turned off on-board components before it went sleep. Start-up and wake up routines will need to take this into consideration. 
+Responding to the COMBINED_SENSOR_INT signal:
+- The COMBINED_SENSOR_INT signal is open drain and active low
+    - The Target (nRF52) must configure its internal pull up in the pin connected to this signal
+    - The Target (nRF52) interrupt must be configured to wake up when the signal transitions from high to low
+- The Target (nRF52) must query the wake up source to the Interface (KL27) via I2C
+    - More information about the I2C protocol can be found in the [I2C Protocol Spec](https://github.com/microbit-foundation/spec-i2c-protocol)
 
 
 ## Power Mode Transitions
@@ -211,7 +245,7 @@ When the nRF52 wakes up, either in reset or continuing where it left off, CODAL 
 - nRF52 turns-on all the required on-board components
 - nRF52 does not need to wake up KL27, as the KL27 manages its own power state in Sleep mode
 
-### On -> Off or Stand-by
+### On -> Off or On ->Stand-by
 
 - User long-presses reset button
     - While the button is pressed down the KL27 halts the nRF52
@@ -226,7 +260,7 @@ When the nRF52 wakes up, either in reset or continuing where it left off, CODAL 
 - nRF52 turns off all on-board components
 - nRF52 sets itself to Deep Sleep
 
-### Off or Stand-by -> On
+### Off -> On or Stand-by -> On
 
 - One of these events activates this transition:
     - (Off mode only) USB insertion wakes up the KL27 (if asleep) and the KL27 wakes up the nRF52 via COMBINED_SENSOR_INT
