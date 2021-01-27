@@ -1,3 +1,13 @@
+---
+layout: page
+title: Power Management Specification
+heading: Power Management Specification
+description: Specification for the micro:bit Power Management
+permalink: /software/spec-power-management
+ref: spec-power-management
+lang: en
+---
+
 # Power Management Specification
 
 ## Version
