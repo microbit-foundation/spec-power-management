@@ -14,6 +14,15 @@ lang: en
 
 This is version 1.0.0 of the specification.
 
+- [Terminology](#terminology)
+- [Introduction](#introduction)
+- [micro:bit Power Modes](#micro:bit-power-modes)
+- [Interface (KL27) Power Modes](#interface-KL27-power-modes)
+- [LED behaviour](#led-behaviour)
+- [Waking Up The Interface (KL27)](#waking-up-the-interface-KL27)
+- [Target (nRF52) Power Modes](#target-nRF52-power-modes)
+- [Waking Up The Target (nRF52)](#waking-up-the-target-nRF52)
+- [Power Mode Transitions](#power-mode-transitions)
 
 ## Terminology
 
@@ -45,7 +54,12 @@ The micro:bit V2 powers both MCUs with all power sources, so to set the board in
 
 We want to define 4 user-facing power modes for the micro:bit board. These board-level modes will be achieved via a combination of different subsystem power modes.
 
-- **On Mode**: Normal running mode.
+- [On Mode](#on-mode)
+- [Deep Sleep Mode](#deep-sleep-mode)
+- [Off Mode](#off-mode)
+- [Stand-by Mode](#stand-by-mode)
+
+- **<a id="on-mode"></a>On Mode**: Normal running mode.
     - As far as the user is concerned, everything is running
     - The software in the Target (nRF52) and Interface (KL27) can decide to go into Sleep if they are idle
         - If the Interface (KL27) is not PC Connected and is idle it must go into Sleep
@@ -58,7 +72,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
     - The Power (red) LED must be ON
     - If the board is PC connected the USB (orange) LED must be ON
     - If the board is not PC connected the USB (orange) LED must be OFF
-- **Deep Sleep Mode**: A mode triggered by the user code to go into a low-power state
+- **<a id="deep-sleep-mode"></a>Deep Sleep Mode**: A mode triggered by the user code to go into a low-power state
     - The Interface (KL27) does not do anything different to the On Mode
     - The Target (nRF52) must turn off the on-board components
     - The Target (nRF52) must go into Sleep
@@ -81,7 +95,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
             - The Interface (KL27) must reset the Target (nRF52) when the reset button is released
     - If the board is PC Connected the USB (orange) and Power (red) LEDs must be ON
     - If the board is not PC Connected the USB (orange) and Power (red) LEDs must be OFF
-- **Off Mode**: Lowest possible power state for all components on the board
+- **<a id="off-mode"></a>Off Mode**: Lowest possible power state for all components on the board
     - The board can be considered "off", although it will still consume power
     - This mode can only be reached if the micro:bit is powered via battery or USB bank (not USB Connected)
     - The Target (nRF52) must turn off the on-board components
@@ -97,7 +111,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
         - Pressing the reset button
     - The Power (red) LED must be OFF
     - The USB (orange) LED must be OFF
-- **Stand-by Mode**: User long presses the reset button, while the micro:bit is PC Connected, to stop their Target (nRF52) programme
+- **<a id="stand-by-mode"></a>Stand-by Mode**: User long presses the reset button, while the micro:bit is PC Connected, to stop their Target (nRF52) programme
     - This is the same as the Off Mode, but this mode is activated when the micro:bit is PC Connected
     - The Interface (KL27) must not go into any sleep in this case, the rest behaves the same
     - The Power (red) LED must be blinking
