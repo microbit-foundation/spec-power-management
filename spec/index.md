@@ -10,19 +10,41 @@ lang: en
 
 # Power Management Specification
 
-## Version
 
-This is version 1.0.0 of the specification.
+## Table of Contents
 
-- [Terminology](#terminology)
+- [Version](#version)
 - [Introduction](#introduction)
-- [micro:bit Power Modes](#micro:bit-power-modes)
+- [Terminology](#terminology)
+- [micro:bit Power Modes](#microbit-power-modes)
 - [Interface (KL27) Power Modes](#interface-KL27-power-modes)
 - [LED behaviour](#led-behaviour)
 - [Waking Up The Interface (KL27)](#waking-up-the-interface-KL27)
 - [Target (nRF52) Power Modes](#target-nRF52-power-modes)
 - [Waking Up The Target (nRF52)](#waking-up-the-target-nRF52)
 - [Power Mode Transitions](#power-mode-transitions)
+
+
+## Version
+
+This is version 1.0.0 of the specification.
+
+
+## Introduction
+
+The micro:bit contains two microcontrollers, the Interface MCU (KL27) which provides the USB functionality, and the Target MCU (nRF52) where the user code runs.
+More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/).
+
+In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
+The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
+
+**Power Modes**
+
+- [On Mode](#on-mode)
+- [Deep Sleep Mode](#deep-sleep-mode)
+- [Off Mode](#off-mode)
+- [Stand-by Mode](#stand-by-mode)
+
 
 ## Terminology
 
@@ -41,23 +63,9 @@ This is version 1.0.0 of the specification.
 | COMBINED_SENSOR_INT | Interrupt signal shared between all the internal I2C devices in the micro:bit board |
 
 
-## Introduction
-
-The micro:bit contains two microcontrollers, the Interface MCU (KL27) which provides the USB functionality, and the Target MCU (nRF52) where the user code runs.
-More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/).
-
-In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
-The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
-
-
 ## micro:bit Power Modes
 
 We want to define 4 user-facing power modes for the micro:bit board. These board-level modes will be achieved via a combination of different subsystem power modes.
-
-- [On Mode](#on-mode)
-- [Deep Sleep Mode](#deep-sleep-mode)
-- [Off Mode](#off-mode)
-- [Stand-by Mode](#stand-by-mode)
 
 - **<a id="on-mode"></a>On Mode**: Normal running mode.
     - As far as the user is concerned, everything is running
