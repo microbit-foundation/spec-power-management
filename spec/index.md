@@ -10,9 +10,36 @@ lang: en
 
 # Power Management Specification
 
-## Version
+This is version 1.0.1 of the specification.
 
-This is version 1.0.0 of the specification.
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Terminology](#terminology)
+- [micro:bit Power Modes](#microbit-power-modes)
+- [Interface (KL27) Power Modes](#interface-KL27-power-modes)
+- [LED behaviour](#led-behaviour)
+- [Waking Up The Interface (KL27)](#waking-up-the-interface-KL27)
+- [Target (nRF52) Power Modes](#target-nRF52-power-modes)
+- [Waking Up The Target (nRF52)](#waking-up-the-target-nRF52)
+- [Power Mode Transitions](#power-mode-transitions)
+- [Changelog](#changelog)
+
+
+## Introduction
+
+The micro:bit contains two microcontrollers, the Interface MCU (KL27) which provides the USB functionality, and the Target MCU (nRF52) where the user code runs.
+More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/).
+
+In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
+The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
+
+The micro:bit V2 has four power modes described in this document:
+
+- [On Mode](#on-mode)
+- [Deep Sleep Mode](#deep-sleep-mode)
+- [Off Mode](#off-mode)
+- [Stand-by Mode](#stand-by-mode)
 
 
 ## Terminology
@@ -32,20 +59,11 @@ This is version 1.0.0 of the specification.
 | COMBINED_SENSOR_INT | Interrupt signal shared between all the internal I2C devices in the micro:bit board |
 
 
-## Introduction
-
-The micro:bit contains two microcontrollers, the Interface MCU (KL27) which provides the USB functionality, and the Target MCU (nRF52) where the user code runs.
-More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/).
-
-In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
-The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
-
-
 ## micro:bit Power Modes
 
 We want to define 4 user-facing power modes for the micro:bit board. These board-level modes will be achieved via a combination of different subsystem power modes.
 
-- **On Mode**: Normal running mode.
+- **<a id="on-mode"></a>On Mode**: Normal running mode.
     - As far as the user is concerned, everything is running
     - The software in the Target (nRF52) and Interface (KL27) can decide to go into Sleep if they are idle
         - If the Interface (KL27) is not PC Connected and is idle it must go into Sleep
@@ -58,7 +76,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
     - The Power (red) LED must be ON
     - If the board is PC connected the USB (orange) LED must be ON
     - If the board is not PC connected the USB (orange) LED must be OFF
-- **Deep Sleep Mode**: A mode triggered by the user code to go into a low-power state
+- **<a id="deep-sleep-mode"></a>Deep Sleep Mode**: A mode triggered by the user code to go into a low-power state
     - The Interface (KL27) does not do anything different to the On Mode
     - The Target (nRF52) must turn off the on-board components
     - The Target (nRF52) must go into Sleep
@@ -81,7 +99,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
             - The Interface (KL27) must reset the Target (nRF52) when the reset button is released
     - If the board is PC Connected the USB (orange) and Power (red) LEDs must be ON
     - If the board is not PC Connected the USB (orange) and Power (red) LEDs must be OFF
-- **Off Mode**: Lowest possible power state for all components on the board
+- **<a id="off-mode"></a>Off Mode**: Lowest possible power state for all components on the board
     - The board can be considered "off", although it will still consume power
     - This mode can only be reached if the micro:bit is powered via battery or USB bank (not USB Connected)
     - The Target (nRF52) must turn off the on-board components
@@ -97,7 +115,7 @@ We want to define 4 user-facing power modes for the micro:bit board. These board
         - Pressing the reset button
     - The Power (red) LED must be OFF
     - The USB (orange) LED must be OFF
-- **Stand-by Mode**: User long presses the reset button, while the micro:bit is PC Connected, to stop their Target (nRF52) programme
+- **<a id="stand-by-mode"></a>Stand-by Mode**: User long presses the reset button, while the micro:bit is PC Connected, to stop their Target (nRF52) programme
     - This is the same as the Off Mode, but this mode is activated when the micro:bit is PC Connected
     - The Interface (KL27) must not go into any sleep in this case, the rest behaves the same
     - The Power (red) LED must be blinking
@@ -297,3 +315,15 @@ The only way to transition from Sleep to Stand-by is by the user pressing the re
 ### Off or Stand-by -> Deep Sleep
 
 Not possible.
+
+
+## Changelog
+
+**1.0.1**:
+- Added Table of Contents.
+- Rorganised sections for better presentation.
+- Added links to the power modes to the intro
+- Added markdown frontmatter metadata for tech.microbit.org website rendering.
+
+**1.0.0**: 
+- Initial release.
