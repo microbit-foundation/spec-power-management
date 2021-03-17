@@ -10,10 +10,10 @@ lang: en
 
 # Power Management Specification
 
+This is version 1.0.1 of the specification.
 
 ## Table of Contents
 
-- [Version](#version)
 - [Introduction](#introduction)
 - [Terminology](#terminology)
 - [micro:bit Power Modes](#microbit-power-modes)
@@ -23,11 +23,7 @@ lang: en
 - [Target (nRF52) Power Modes](#target-nRF52-power-modes)
 - [Waking Up The Target (nRF52)](#waking-up-the-target-nRF52)
 - [Power Mode Transitions](#power-mode-transitions)
-
-
-## Version
-
-This is version 1.0.0 of the specification.
+- [Changelog](#changelog)
 
 
 ## Introduction
@@ -38,7 +34,7 @@ More information can be found in the [Tech Site DAPLink page](https://tech.micro
 In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
 The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
 
-**Power Modes**
+The micro:bit V2 has four power modes described in this document:
 
 - [On Mode](#on-mode)
 - [Deep Sleep Mode](#deep-sleep-mode)
@@ -319,3 +315,15 @@ The only way to transition from Sleep to Stand-by is by the user pressing the re
 ### Off or Stand-by -> Deep Sleep
 
 Not possible.
+
+
+## Changelog
+
+**1.0.1**:
+- Added Table of Contents.
+- Rorganised sections for better presentation.
+- Added links to the power modes to the intro
+- Added markdown frontmatter metadata for tech.microbit.org website rendering.
+
+**1.0.0**: 
+- Initial release.
