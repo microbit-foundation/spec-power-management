@@ -13,7 +13,7 @@ Other useful technical documentation:
 - [micro:bit Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/)
 - [micro:bit I2C Specification](https://github.com/microbit-foundation/spec-i2c-protocol)
 - [micro:bit Tech Site pin and signals information](https://tech.microbit.org/hardware/schematic/)
-- [micro:bit V2 schematic](https://github.com/microbit-foundation/microbit-v2-hardware/blob/main/V2/MicroBit_V2.0.0_S_schematic.PDF)
+- [micro:bit V2 schematic](https://github.com/microbit-foundation/microbit-v2-hardware/)
 
 ## Implementations
 
