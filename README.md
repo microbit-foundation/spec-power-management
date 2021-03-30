@@ -30,8 +30,8 @@ SPDX-License-Identifier: [CC-BY-SA-4.0](LICENSE)
 
 Trust, partnership, simplicity and passion are our core values we live and 
 breathe in our daily work life and within our projects. Our open-source projects 
-are no exception. We have an active community which spans the globe and we 
-welcome and encourage participation and contributions to our projects by everyone. 
+are no exception. We have an active community which spans the globe and we welcome 
+and encourage participation and contributions to our projects by everyone. 
 We work to foster a positive, open, inclusive and supportive environment and 
 trust that our community respects the micro:bit code of conduct. 
 
