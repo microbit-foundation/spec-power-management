@@ -10,18 +10,18 @@ lang: en
 
 # Power Management Specification
 
-This is version 1.0.1 of the specification.
+This is version 1.0.2 of the specification.
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Terminology](#terminology)
 - [micro:bit Power Modes](#microbit-power-modes)
-- [Interface (KL27) Power Modes](#interface-KL27-power-modes)
+- [Interface (KL27) Power Modes](#interface-kl27-power-modes)
 - [LED behaviour](#led-behaviour)
-- [Waking Up The Interface (KL27)](#waking-up-the-interface-KL27)
-- [Target (nRF52) Power Modes](#target-nRF52-power-modes)
-- [Waking Up The Target (nRF52)](#waking-up-the-target-nRF52)
+- [Waking Up The Interface (KL27)](#waking-up-the-interface-kl27)
+- [Target (nRF52) Power Modes](#target-nrf52-power-modes)
+- [Waking Up The Target (nRF52)](#waking-up-the-target-nrf52)
 - [Power Mode Transitions](#power-mode-transitions)
 - [Changelog](#changelog)
 
@@ -319,11 +319,15 @@ Not possible.
 
 ## Changelog
 
-**1.0.1**:
-- Added Table of Contents.
-- Rorganised sections for better presentation.
-- Added links to the power modes to the intro
-- Added markdown frontmatter metadata for tech.microbit.org website rendering.
+| Version      | Changes |
+|--------------|---------|
+| 1.0.0        | Initial release. |
+| [1.0.1][101] | Added Table of Contents. |
+|              | Reorganised sections for better presentation. |
+|              | Added links to the power modes to the intro |
+|              | Added markdown frontmatter metadata for tech.microbit.org website rendering. |
+| [1.0.2][102] | Reformatted changelog |
+|              | Fixed table of contents links |
 
-**1.0.0**: 
-- Initial release.
+[101]: https://github.com/microbit-foundation/spec-power-management/commit/917a60dc70c2691abb5227d70829246f83ccfd53
+[102]: https://github.com/microbit-foundation/spec-power-management/commit/????
