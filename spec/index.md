@@ -20,7 +20,7 @@ This is version 1.0.3 of the specification.
 - [Interface MCU Power Modes](#interface-mcu-power-modes)
 - [LED behaviour](#led-behaviour)
 - [Waking Up The Interface MCU](#waking-up-the-interface-mcu)
-- [Target MCU Power Modes](#target-nrf52-power-modes)
+- [Target MCU Power Modes](#target-mcu-power-modes)
 - [Waking Up The Target MCU](#waking-up-the-target-mcu)
 - [Power Mode Transitions](#power-mode-transitions)
 - [Changelog](#changelog)
