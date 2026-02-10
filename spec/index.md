@@ -3,7 +3,8 @@ layout: page
 title: Power Management Specification
 heading: Power Management Specification
 description: Specification for the micro:bit Power Management
-permalink: /software/spec-power-management/
+permalink: /firmware/spec-power-management/
+slug: /firmware/spec-power-management/
 ref: spec-power-management
 lang: en
 ---
@@ -12,24 +13,10 @@ lang: en
 
 This is version 1.0.3 of the specification.
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Terminology](#terminology)
-- [micro:bit Power Modes](#microbit-power-modes)
-- [Interface MCU Power Modes](#interface-mcu-power-modes)
-- [LED behaviour](#led-behaviour)
-- [Waking Up The Interface MCU](#waking-up-the-interface-mcu)
-- [Target MCU Power Modes](#target-mcu-power-modes)
-- [Waking Up The Target MCU](#waking-up-the-target-mcu)
-- [Power Mode Transitions](#power-mode-transitions)
-- [Changelog](#changelog)
-
-
 ## Introduction
 
 The micro:bit contains two microcontrollers, the Interface MCU (KL27 in micro:bit V2.00 or nRF52 in micro:bit V2.2x) which provides the USB functionality, and the Target MCU (nRF52 in all micro:bit V2 versions) where the user code runs.
-More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/software/daplink-interface/).
+More information can be found in the [Tech Site DAPLink page](https://tech.microbit.org/firmware/daplink-interface/).
 
 In micro:bit V1 the Interface MCU (KL26) is not powered via batteries or the Edge Connector, so the sleep functionality is only implemented in the Target MCU (nRF51).
 The micro:bit V2 powers both MCUs with all power sources, so to set the board into a sleep mode some co-operation via the [I2C protocol](https://github.com/microbit-foundation/spec-i2c-protocol) is needed.
@@ -59,7 +46,7 @@ The micro:bit V2 has four power modes described in this document:
 | COMBINED_SENSOR_INT | Interrupt signal shared between all the internal I2C devices in the micro:bit board |
 
 
-## micro:bit Power Modes
+## micro\:bit Power Modes
 
 We want to define 4 user-facing power modes for the micro:bit board. These board-level modes will be achieved via a combination of different subsystem power modes.
 
